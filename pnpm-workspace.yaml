@@ -1,0 +1,7 @@
+nodeLinker: hoisted
+packageImportMethod: copy
+symlink: false
+allowBuilds:
+  bcrypt: true
+onlyBuiltDependencies:
+  - bcrypt
