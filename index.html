@@ -1,367 +1,903 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIVI · Área de clientes</title>
-<style>
-@font-face{font-family:'Outfit';src:url('/assets/Outfit-Light.ttf') format('truetype');font-weight:300;font-style:normal}
-@font-face{font-family:'Outfit';src:url('/assets/Outfit-Regular.ttf') format('truetype');font-weight:400;font-style:normal}
-@font-face{font-family:'Outfit';src:url('/assets/Outfit-Medium.ttf') format('truetype');font-weight:500;font-style:normal}
-@font-face{font-family:'Outfit';src:url('/assets/Outfit-Bold.ttf') format('truetype');font-weight:700;font-style:normal}
-@font-face{font-family:'Grift';src:url('/assets/grift-regular.otf') format('opentype');font-weight:400;font-style:normal}
-@font-face{font-family:'Grift';src:url('/assets/grift-medium.otf') format('opentype');font-weight:500;font-style:normal}
-@font-face{font-family:'Grift';src:url('/assets/grift-bold.otf') format('opentype');font-weight:700;font-style:normal}
-@font-face{font-family:'Grift';src:url('/assets/grift-black.otf') format('opentype');font-weight:900;font-style:normal}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIVI · Área de clientes</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal
+    }
 
-:root{
-  --ink:#1d1d1f;
-  --gray:#86868b;
-  --gray2:#6e6e73;
-  --blue:#0605fe;
-  --bg2:#ededed;
-  --line:#d2d2d7;
-  --green:#3df099;
-  --sf:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --outfit:'Outfit', var(--sf);
-  --grift:'Grift', var(--sf);
-}
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal
+    }
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:var(--outfit);font-size:14px;background:var(--bg2);color:var(--ink);-webkit-font-smoothing:antialiased}
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-style: normal
+    }
 
-/* ── Login / Register ──────────────────────────────────── */
-#login-view{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff;padding:20px}
-.login-card{width:100%;max-width:380px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:40px 36px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
-.login-logo{height:32px;display:block;margin-bottom:16px}
-.login-sub{font-size:13px;color:var(--gray2);margin-bottom:24px}
-.tabs{display:flex;border:1px solid var(--line);border-radius:980px;padding:3px;margin-bottom:22px}
-.tab{flex:1;text-align:center;padding:8px;border-radius:980px;font-size:13px;font-weight:600;cursor:pointer;color:var(--gray2);background:none;border:none}
-.tab.active{background:var(--blue);color:#fff}
-.lbl{display:block;font-size:12px;font-weight:600;color:var(--gray2);margin-bottom:6px}
-.inp,select.inp{width:100%;border:1px solid transparent;border-radius:12px;padding:11px 13px;font-size:14px;color:var(--ink);outline:none;transition:border-color .15s,background .15s;background:var(--bg2);font-family:inherit}
-.inp:focus{background:#fff;border-color:var(--blue)}
-.mg{margin-bottom:14px}
-.btn-login{width:100%;background:var(--blue);color:#fff;border:none;border-radius:980px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:6px;letter-spacing:-.01em}
-.btn-login:hover{opacity:.9}
-.btn-login:disabled{opacity:.6;cursor:default}
-.form-err{color:#dc2626;font-size:12px;margin-top:10px;display:none}
-.form-ok{color:#16a34a;font-size:12px;margin-top:10px;display:none}
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal
+    }
 
-/* ── App Layout ──────────────────────────────────────── */
-#app-view{display:none;height:100vh;overflow:hidden}
-.layout{display:flex;height:100%}
-.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fff}
-.sb-head{padding:22px 18px 16px;border-bottom:1px solid var(--line)}
-.sb-logo-img{height:26px;display:block}
-.sb-tag{font-size:11px;color:var(--gray);margin-top:2px}
-.sb-nav{flex:1;padding:10px 8px}
-.nav-it{font-family:var(--outfit);display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:980px;cursor:pointer;color:var(--gray2);font-size:13px;font-weight:500;margin-bottom:2px;transition:background .12s,color .12s;border:none;background:none;width:100%;text-align:left}
-.nav-it:hover{font-family:var(--outfit);background:var(--bg2);color:var(--ink)}
-.nav-it.active{font-family:var(--outfit);background:var(--blue);color:#fff}
-.sb-foot{padding:14px 10px;border-top:1px solid var(--line)}
-.btn-logout{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:980px;cursor:pointer;color:var(--gray2);font-size:13px;font-weight:500;width:100%;background:none;border:none}
-.btn-logout:hover{background:#fef2f2;color:#dc2626}
+    @font-face {
+      font-family: 'Grift';
+      src: url('/assets/grift-regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal
+    }
 
-.main{flex:1;overflow-y:auto;background:#fff;border:none;display:flex;flex-direction:column;min-width:0}
-.mhdr{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:14px 26px;display:flex;align-items:center;gap:14px;justify-content:flex-start;flex-shrink:0}
-.mhdr-left h2{font-family:var(--outfit);font-size:18px;font-weight:800;letter-spacing:-.03em}
-.mhdr-left p{font-size:12px;color:var(--gray);margin-top:1px}
-.mcontent{padding:22px 26px;flex:1;max-width:760px;width:100%}
+    @font-face {
+      font-family: 'Grift';
+      src: url('/assets/grift-medium.otf') format('opentype');
+      font-weight: 500;
+      font-style: normal
+    }
 
-/* ── Hamburger / mobile sidebar ───────────────────────────── */
-.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:22px;height:22px;border:none;background:none;cursor:pointer;padding:0;flex-shrink:0}
-.hamburger span{display:block;height:2px;width:100%;background:var(--ink);border-radius:2px;transition:transform .2s,opacity .2s}
-.hamburger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.hamburger[aria-expanded="true"] span:nth-child(2){opacity:0}
-.hamburger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:45}
-.sidebar-overlay.show{display:block}
+    @font-face {
+      font-family: 'Grift';
+      src: url('/assets/grift-bold.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal
+    }
 
-.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.03);margin-bottom:20px}
-.card h3{font-family:var(--outfit);font-size:17px;font-weight:700;color:var(--ink);margin:0 0 20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:16px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.chip{border:1px solid var(--line);border-radius:980px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--gray2);background:#fff;user-select:none}
-.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+    @font-face {
+      font-family: 'Grift';
+      src: url('/assets/grift-black.otf') format('opentype');
+      font-weight: 900;
+      font-style: normal
+    }
 
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:980px;font-size:13px;font-weight:600;cursor:pointer;border:none}
-.btn-primary{background:var(--blue);color:#fff}
-.btn-primary:hover{opacity:.85}
-.btn-primary:disabled{opacity:.6;cursor:default}
+    :root {
+      --ink: #1d1d1f;
+      --gray: #86868b;
+      --gray2: #6e6e73;
+      --blue: #0605fe;
+      --bg2: #ededed;
+      --line: #d2d2d7;
+      --green: #3df099;
+      --sf: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --outfit: 'Outfit', var(--sf);
+      --grift: 'Grift', var(--sf);
+    }
 
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:10px 0;font-weight:600;color:var(--gray2);border-bottom:2px solid var(--line)}
-td{padding:10px 0;border-bottom:1px solid var(--line)}
-.badge{display:inline-block;padding:3px 9px;border-radius:980px;font-size:11px;font-weight:600}
-.bg-blue{background:#dbeafe;color:#1e40af}
-.bg-green{background:#dcfce7;color:#166534}
-.bg-yellow{background:#fef9c3;color:#854d0e}
-.bg-red{background:#fee2e2;color:#991b1b}
-.bg-gray{background:var(--bg2);color:var(--gray2)}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-.order-card{display:flex;align-items:center;justify-content:space-between;padding:18px;border:1px solid var(--line);border-radius:16px}
-.order-name{font-weight:700;color:var(--ink)}
-.order-sub{font-size:12px;color:var(--gray);margin-top:2px}
+    html,
+    body {
+      height: 100%;
+      font-family: var(--outfit);
+      font-size: 16px;
+      background: var(--bg2);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased
+    }
 
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--blue);color:#fff;padding:11px 20px;border-radius:980px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:100}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.err{background:#dc2626}
-.loading{padding:40px;text-align:center;color:var(--gray)}
+    /* ── Login / Register ──────────────────────────────────── */
+    #login-view {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #fff;
+      padding: 20px
+    }
 
-/* ── Responsive / mobile ───────────────────────────────────── */
-@media (max-width:860px){
-  .hamburger{display:flex}
-  .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;z-index:50;transform:translateX(-100%);transition:transform .25s ease}
-  .sidebar.open{transform:translateX(0);box-shadow:8px 0 24px rgba(0,0,0,.18)}
-  .mhdr{padding:12px 16px}
-  .mcontent{padding:16px}
-  .grid2{grid-template-columns:1fr}
-  .card{padding:18px;border-radius:16px}
-  .card h3{font-size:16px}
-  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap}
-  .order-card{flex-wrap:wrap;gap:10px}
-}
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .06)
+    }
 
-@media (max-width:480px){
-  .login-card{padding:30px 22px}
-  .mhdr-left h2{font-size:16px}
-  .btn-login{padding:13px}
-}
-</style>
+    .login-logo {
+      height: 32px;
+      display: block;
+      margin-bottom: 16px
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: var(--gray2);
+      margin-bottom: 24px
+    }
+
+    .tabs {
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: 980px;
+      padding: 3px;
+      margin-bottom: 22px
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--gray2);
+      background: none;
+      border: none
+    }
+
+    .tab.active {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .lbl {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray2);
+      margin-bottom: 6px
+    }
+
+    .inp,
+    select.inp {
+      width: 100%;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 11px 13px;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s, background .15s;
+      background: var(--bg2);
+      font-family: inherit
+    }
+
+    .inp:focus {
+      background: #fff;
+      border-color: var(--blue)
+    }
+
+    .mg {
+      margin-bottom: 14px
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 980px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      letter-spacing: -.01em
+    }
+
+    .btn-login:hover {
+      opacity: .9
+    }
+
+    .btn-login:disabled {
+      opacity: .6;
+      cursor: default
+    }
+
+    .form-err {
+      color: #dc2626;
+      font-size: 12px;
+      margin-top: 10px;
+      display: none
+    }
+
+    .form-ok {
+      color: #16a34a;
+      font-size: 12px;
+      margin-top: 10px;
+      display: none
+    }
+
+    /* ── App Layout ──────────────────────────────────────── */
+    #app-view {
+      display: none;
+      height: 100vh;
+      overflow: hidden
+    }
+
+    .layout {
+      display: flex;
+      height: 100%
+    }
+
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      background: #fff
+    }
+
+    .sb-head {
+      padding: 22px 18px 16px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .sb-logo-img {
+      height: 26px;
+      display: block
+    }
+
+    .sb-tag {
+      font-size: 11px;
+      color: var(--gray);
+      margin-top: 2px
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 10px 8px
+    }
+
+    .nav-it {
+      font-family: var(--outfit);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 980px;
+      cursor: pointer;
+      color: var(--gray2);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      transition: background .12s, color .12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left
+    }
+
+    .nav-it:hover {
+      font-family: var(--outfit);
+      background: var(--bg2);
+      color: var(--ink)
+    }
+
+    .nav-it.active {
+      font-family: var(--outfit);
+      background: var(--blue);
+      color: #fff
+    }
+
+    .sb-foot {
+      padding: 14px 10px;
+      border-top: 1px solid var(--line)
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border-radius: 980px;
+      cursor: pointer;
+      color: var(--gray2);
+      font-size: 13px;
+      font-weight: 500;
+      width: 100%;
+      background: none;
+      border: none
+    }
+
+    .btn-logout:hover {
+      background: #fef2f2;
+      color: #dc2626
+    }
+
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      min-width: 0
+    }
+
+    .mhdr {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 26px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      justify-content: flex-start;
+      flex-shrink: 0
+    }
+
+    .mhdr-left h2 {
+      font-family: var(--outfit);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -.03em
+    }
+
+    .mhdr-left p {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 1px
+    }
+
+    .mcontent {
+      padding: 22px 26px;
+      flex: 1;
+      max-width: 760px;
+      width: 100%
+    }
+
+    /* ── Hamburger / mobile sidebar ───────────────────────────── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0
+    }
+
+    .hamburger span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background: var(--ink);
+      border-radius: 2px;
+      transition: transform .2s, opacity .2s
+    }
+
+    .hamburger[aria-expanded="true"] span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg)
+    }
+
+    .hamburger[aria-expanded="true"] span:nth-child(2) {
+      opacity: 0
+    }
+
+    .hamburger[aria-expanded="true"] span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg)
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 45
+    }
+
+    .sidebar-overlay.show {
+      display: block
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .03);
+      margin-bottom: 20px
+    }
+
+    .card h3 {
+      font-family: var(--outfit);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 980px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--gray2);
+      background: #fff;
+      user-select: none
+    }
+
+    .chip.on {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      opacity: .85
+    }
+
+    .btn-primary:disabled {
+      opacity: .6;
+      cursor: default
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 0;
+      font-weight: 600;
+      color: var(--gray2);
+      border-bottom: 2px solid var(--line)
+    }
+
+    td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 980px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .bg-blue {
+      background: #dbeafe;
+      color: #1e40af
+    }
+
+    .bg-green {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .bg-yellow {
+      background: #fef9c3;
+      color: #854d0e
+    }
+
+    .bg-red {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .bg-gray {
+      background: var(--bg2);
+      color: var(--gray2)
+    }
+
+    .order-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px
+    }
+
+    .order-name {
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .order-sub {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 2px
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--blue);
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 100
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .toast.err {
+      background: #dc2626
+    }
+
+    .loading {
+      padding: 40px;
+      text-align: center;
+      color: var(--gray)
+    }
+
+    /* ── Responsive / mobile ───────────────────────────────────── */
+    @media (max-width:860px) {
+      .hamburger {
+        display: flex
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 240px;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform .25s ease
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 8px 0 24px rgba(0, 0, 0, .18)
+      }
+
+      .mhdr {
+        padding: 12px 16px
+      }
+
+      .mcontent {
+        padding: 16px
+      }
+
+      .grid2 {
+        grid-template-columns: 1fr
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 16px
+      }
+
+      .card h3 {
+        font-size: 16px
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap
+      }
+
+      .order-card {
+        flex-wrap: wrap;
+        gap: 10px
+      }
+    }
+
+    @media (max-width:480px) {
+      .login-card {
+        padding: 30px 22px
+      }
+
+      .mhdr-left h2 {
+        font-size: 16px
+      }
+
+      .btn-login {
+        padding: 13px
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ══════════════════════════════════════════ LOGIN / REGISTRO ══ -->
-<div id="login-view">
-  <div class="login-card">
-    <img src="/assets/logolivi1.png" alt="Livi" class="login-logo">
-    <div class="login-sub">Área de clientes</div>
+  <!-- ══════════════════════════════════════════ LOGIN / REGISTRO ══ -->
+  <div id="login-view">
+    <div class="login-card">
+      <img src="/assets/logolivi1.png" alt="Livi" class="login-logo">
+      <div class="login-sub">Área de clientes</div>
 
-    <div class="tabs">
-      <button class="tab active" id="tab-login" onclick="switchTab('login')">Iniciar sesión</button>
-      <button class="tab" id="tab-register" onclick="switchTab('register')">Crear acceso</button>
+      <div class="tabs">
+        <button class="tab active" id="tab-login" onclick="switchTab('login')">Iniciar sesión</button>
+        <button class="tab" id="tab-register" onclick="switchTab('register')">Crear acceso</button>
+      </div>
+
+      <form id="login-form" onsubmit="doLogin(event)">
+        <div class="mg"><label class="lbl">Email</label><input class="inp" type="email" id="li-email" required></div>
+        <div class="mg"><label class="lbl">Contraseña</label><input class="inp" type="password" id="li-pass" required>
+        </div>
+        <button class="btn-login" id="login-btn" type="submit">Entrar</button>
+        <div class="form-err" id="login-err">Credenciales incorrectas.</div>
+      </form>
+      <p style="font-size:11px;color:var(--gray);margin-top:14px">Si ya dejaste tus datos en la web, usa el mismo email
+        para activar tu acceso.</p><br><br>
+      <p></p>
+      <form id="register-form" style="display:none" onsubmit="doRegister(event)">
+        <div class="mg"><label class="lbl">Nombre completo</label><input class="inp" type="text" id="re-nombre"
+            required></div>
+        <div class="mg"><label class="lbl">Email</label><input class="inp" type="email" id="re-email" required></div>
+        <div class="mg"><label class="lbl">Teléfono</label><input class="inp" type="tel" id="re-telefono"></div>
+        <div class="mg"><label class="lbl">Contraseña</label><input class="inp" type="password" id="re-pass"
+            minlength="6" required></div>
+        <button class="btn-login" id="register-btn" type="submit">Crear mi acceso</button>
+        <div class="form-err" id="register-err"></div>
+      </form>
+
     </div>
-
-    <form id="login-form" onsubmit="doLogin(event)">
-      <div class="mg"><label class="lbl">Email</label><input class="inp" type="email" id="li-email" required></div>
-      <div class="mg"><label class="lbl">Contraseña</label><input class="inp" type="password" id="li-pass" required></div>
-      <button class="btn-login" id="login-btn" type="submit">Entrar</button>
-      <div class="form-err" id="login-err">Credenciales incorrectas.</div>
-    </form>
-
-    <form id="register-form" style="display:none" onsubmit="doRegister(event)">
-      <div class="mg"><label class="lbl">Nombre completo</label><input class="inp" type="text" id="re-nombre" required></div>
-      <div class="mg"><label class="lbl">Email</label><input class="inp" type="email" id="re-email" required></div>
-      <div class="mg"><label class="lbl">Teléfono</label><input class="inp" type="tel" id="re-telefono"></div>
-      <div class="mg"><label class="lbl">Contraseña</label><input class="inp" type="password" id="re-pass" minlength="6" required></div>
-      <button class="btn-login" id="register-btn" type="submit">Crear mi acceso</button>
-      <div class="form-err" id="register-err"></div>
-    </form>
-    <p style="font-size:11px;color:var(--gray);margin-top:14px">Si ya dejaste tus datos en la web, usa el mismo email para activar tu acceso.</p>
   </div>
-</div>
 
-<!-- ══════════════════════════════════════════════════ APP ══ -->
-<div id="app-view">
-  <div class="layout">
-    <div class="sidebar" id="sidebar">
-      <div class="sb-head">
-        <img src="/assets/logolivi1.png" alt="Livi" class="sb-logo-img">
-        <div class="sb-tag">Área de clientes</div>
-      </div>
-      <div class="sb-nav">
-        <button class="nav-it" id="nav-datos" onclick="navigate('datos')">Mis datos</button>
-        <button class="nav-it" id="nav-vivienda" onclick="navigate('vivienda')">Mi vivienda</button>
-        <button class="nav-it" id="nav-pedidos" onclick="navigate('pedidos')">Mis pedidos</button>
-      </div>
-      <div class="sb-foot">
-        <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
-      </div>
-    </div>
-
-    <div class="main">
-      <div class="mhdr">
-        <button class="hamburger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false" onclick="toggleSidebar()">
-          <span></span><span></span><span></span>
-        </button>
-        <div class="mhdr-left">
-          <h2 id="page-title"></h2>
-          <p id="page-sub"></p>
+  <!-- ══════════════════════════════════════════════════ APP ══ -->
+  <div id="app-view">
+    <div class="layout">
+      <div class="sidebar" id="sidebar">
+        <div class="sb-head">
+          <img src="/assets/logolivi1.png" alt="Livi" class="sb-logo-img">
+          <div class="sb-tag">Área de clientes</div>
+        </div>
+        <div class="sb-nav">
+          <button class="nav-it" id="nav-datos" onclick="navigate('datos')">Mis datos</button>
+          <button class="nav-it" id="nav-vivienda" onclick="navigate('vivienda')">Mi vivienda</button>
+          <button class="nav-it" id="nav-pedidos" onclick="navigate('pedidos')">Mis pedidos</button>
+        </div>
+        <div class="sb-foot">
+          <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
         </div>
       </div>
-      <div class="mcontent" id="main-content"></div>
+
+      <div class="main">
+        <div class="mhdr">
+          <button class="hamburger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false"
+            onclick="toggleSidebar()">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="mhdr-left">
+            <h2 id="page-title"></h2>
+            <p id="page-sub"></p>
+          </div>
+        </div>
+        <div class="mcontent" id="main-content"></div>
+      </div>
     </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   </div>
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<script>
-'use strict';
+  <script>
+    'use strict';
 
-/* ── State ───────────────────────────────────────────────── */
-const S = {
-  token: localStorage.getItem('livi_cli_tok'),
-  section: 'datos',
-  me: null,
-  catalog: null,
-};
+    /* ── State ───────────────────────────────────────────────── */
+    const S = {
+      token: localStorage.getItem('livi_cli_tok'),
+      section: 'datos',
+      me: null,
+      catalog: null,
+    };
 
-/* ── API helper ──────────────────────────────────────────── */
-const api = {
-  hdr() { return {'Content-Type':'application/json','Authorization':'Bearer '+S.token}; },
-  async req(method, path, body) {
-    const opts = { method, headers: api.hdr() };
-    if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(path, opts);
-    if (r.status === 401) { doLogout(); throw Error('Sesión expirada'); }
-    const data = await r.json();
-    if (!r.ok) throw Error(data.error || r.statusText);
-    return data;
-  },
-  get: (p) => api.req('GET', p),
-  post: (p, b) => api.req('POST', p, b),
-  put: (p, b) => api.req('PUT', p, b),
-};
+    /* ── API helper ──────────────────────────────────────────── */
+    const api = {
+      hdr() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + S.token }; },
+      async req(method, path, body) {
+        const opts = { method, headers: api.hdr() };
+        if (body) opts.body = JSON.stringify(body);
+        const r = await fetch(path, opts);
+        if (r.status === 401) { doLogout(); throw Error('Sesión expirada'); }
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || r.statusText);
+        return data;
+      },
+      get: (p) => api.req('GET', p),
+      post: (p, b) => api.req('POST', p, b),
+      put: (p, b) => api.req('PUT', p, b),
+    };
 
-/* ── Toast ───────────────────────────────────────────────── */
-function showToast(msg, isErr = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (isErr ? ' err' : '');
-  t.classList.add('show');
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), 3200);
-}
-
-/* ── Login tabs ──────────────────────────────────────────── */
-function switchTab(tab) {
-  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
-  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
-  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
-}
-
-/* ── Login / Register / Logout ────────────────────────────── */
-async function doLogin(e) {
-  e.preventDefault();
-  const btn = document.getElementById('login-btn');
-  btn.textContent = 'Entrando…'; btn.disabled = true;
-  const err = document.getElementById('login-err');
-  err.style.display = 'none';
-  try {
-    const d = await api.req('POST', '/clientes/api/login', {
-      email: document.getElementById('li-email').value,
-      password: document.getElementById('li-pass').value,
-    });
-    S.token = d.token;
-    localStorage.setItem('livi_cli_tok', d.token);
-    enterApp();
-  } catch (e2) {
-    err.textContent = e2.message || 'Credenciales incorrectas.';
-    err.style.display = 'block';
-  } finally {
-    btn.textContent = 'Entrar'; btn.disabled = false;
-  }
-}
-
-async function doRegister(e) {
-  e.preventDefault();
-  const btn = document.getElementById('register-btn');
-  btn.textContent = 'Creando…'; btn.disabled = true;
-  const err = document.getElementById('register-err');
-  err.style.display = 'none';
-  try {
-    const d = await api.req('POST', '/clientes/api/register', {
-      nombre: document.getElementById('re-nombre').value,
-      email: document.getElementById('re-email').value,
-      telefono: document.getElementById('re-telefono').value,
-      password: document.getElementById('re-pass').value,
-    });
-    S.token = d.token;
-    localStorage.setItem('livi_cli_tok', d.token);
-    enterApp();
-  } catch (e2) {
-    err.textContent = e2.message || 'No se pudo crear el acceso.';
-    err.style.display = 'block';
-  } finally {
-    btn.textContent = 'Crear mi acceso'; btn.disabled = false;
-  }
-}
-
-async function doLogout() {
-  const oldToken = S.token;
-  S.token = null;
-  localStorage.removeItem('livi_cli_tok');
-  if (oldToken) {
-    try { await fetch('/clientes/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + oldToken } }); } catch {}
-  }
-  document.getElementById('app-view').style.display = 'none';
-  document.getElementById('login-view').style.display = 'flex';
-}
-
-function enterApp() {
-  document.getElementById('login-view').style.display = 'none';
-  document.getElementById('app-view').style.display = 'block';
-  navigate('datos');
-}
-
-/* ── Mobile sidebar ──────────────────────────────────────── */
-function toggleSidebar() {
-  const open = !document.getElementById('sidebar').classList.contains('open');
-  document.getElementById('sidebar').classList.toggle('open', open);
-  document.getElementById('sidebar-overlay').classList.toggle('show', open);
-  document.getElementById('hamburger-btn').setAttribute('aria-expanded', open);
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('show');
-  document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'false');
-}
-
-/* ── Navigation ──────────────────────────────────────────── */
-const PAGES = {
-  datos:    ['Mis datos', 'Los datos que dejaste al registrarte'],
-  vivienda: ['Mi vivienda', 'La configuración de tu hogar'],
-  pedidos:  ['Mis pedidos', 'Estado de tus pedidos LIVI'],
-};
-
-async function navigate(section) {
-  closeSidebar();
-  S.section = section;
-  document.querySelectorAll('.nav-it').forEach(el => el.classList.remove('active'));
-  document.getElementById('nav-' + section)?.classList.add('active');
-  const [title, sub] = PAGES[section] || ['', ''];
-  document.getElementById('page-title').textContent = title;
-  document.getElementById('page-sub').textContent = sub;
-
-  const c = document.getElementById('main-content');
-  c.innerHTML = '<div class="loading">Cargando…</div>';
-  try {
-    if (!S.me) S.me = await api.get('/clientes/api/me');
-    if (!S.catalog) {
-      try { S.catalog = await (await fetch('/api/configurador-data')).json(); } catch { S.catalog = null; }
+    /* ── Toast ───────────────────────────────────────────────── */
+    function showToast(msg, isErr = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast' + (isErr ? ' err' : '');
+      t.classList.add('show');
+      clearTimeout(t._tid);
+      t._tid = setTimeout(() => t.classList.remove('show'), 3200);
     }
-    if (section === 'datos') renderDatos();
-    else if (section === 'vivienda') renderVivienda();
-    else if (section === 'pedidos') renderPedidos();
-  } catch (e) {
-    c.innerHTML = `<div style="color:#dc2626">Error: ${x(e.message)}</div>`;
-  }
-}
 
-/* ── Sección: Mis datos ───────────────────────────────────── */
-const CONVIVE_OPTS = ['Teléfono', 'Prefiero Email', 'Prefiero Whastapp'];
-const PERSONAS_OPTS = ['1', '2', '3', 'Más de 4'];
-const URGENCIA_OPTS = ['Julio', 'Agosto', 'Septiembre', 'Me es indiferente'];
-const PAINS_OPTS = ['Ahorro energía', 'Controlar una segunda residencia ', 'Reducir el consumo de luz y gas', 'Mejorar la seguridad del hogar', 'Detectar fugas o incidencias', 'Automatizar tareas del día a día', 'Tener todo controlado desde una única aplicación '];
+    /* ── Login tabs ──────────────────────────────────────────── */
+    function switchTab(tab) {
+      document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+      document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+      document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+    }
 
-function renderDatos() {
-  const r = S.me.registro;
-  const c = document.getElementById('main-content');
-  c.innerHTML = `
+    /* ── Login / Register / Logout ────────────────────────────── */
+    async function doLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      btn.textContent = 'Entrando…'; btn.disabled = true;
+      const err = document.getElementById('login-err');
+      err.style.display = 'none';
+      try {
+        const d = await api.req('POST', '/clientes/api/login', {
+          email: document.getElementById('li-email').value,
+          password: document.getElementById('li-pass').value,
+        });
+        S.token = d.token;
+        localStorage.setItem('livi_cli_tok', d.token);
+        enterApp();
+      } catch (e2) {
+        err.textContent = e2.message || 'Credenciales incorrectas.';
+        err.style.display = 'block';
+      } finally {
+        btn.textContent = 'Entrar'; btn.disabled = false;
+      }
+    }
+
+    async function doRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('register-btn');
+      btn.textContent = 'Creando…'; btn.disabled = true;
+      const err = document.getElementById('register-err');
+      err.style.display = 'none';
+      try {
+        const d = await api.req('POST', '/clientes/api/register', {
+          nombre: document.getElementById('re-nombre').value,
+          email: document.getElementById('re-email').value,
+          telefono: document.getElementById('re-telefono').value,
+          password: document.getElementById('re-pass').value,
+        });
+        S.token = d.token;
+        localStorage.setItem('livi_cli_tok', d.token);
+        enterApp();
+      } catch (e2) {
+        err.textContent = e2.message || 'No se pudo crear el acceso.';
+        err.style.display = 'block';
+      } finally {
+        btn.textContent = 'Crear mi acceso'; btn.disabled = false;
+      }
+    }
+
+    async function doLogout() {
+      const oldToken = S.token;
+      S.token = null;
+      localStorage.removeItem('livi_cli_tok');
+      if (oldToken) {
+        try { await fetch('/clientes/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + oldToken } }); } catch { }
+      }
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('login-view').style.display = 'flex';
+    }
+
+    function enterApp() {
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('app-view').style.display = 'block';
+      navigate('datos');
+    }
+
+    /* ── Mobile sidebar ──────────────────────────────────────── */
+    function toggleSidebar() {
+      const open = !document.getElementById('sidebar').classList.contains('open');
+      document.getElementById('sidebar').classList.toggle('open', open);
+      document.getElementById('sidebar-overlay').classList.toggle('show', open);
+      document.getElementById('hamburger-btn').setAttribute('aria-expanded', open);
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('show');
+      document.getElementById('hamburger-btn').setAttribute('aria-expanded', 'false');
+    }
+
+    /* ── Navigation ──────────────────────────────────────────── */
+    const PAGES = {
+      datos: ['Mis datos', 'Los datos que dejaste al registrarte'],
+      vivienda: ['Mi vivienda', 'La configuración de tu hogar'],
+      pedidos: ['Mis pedidos', 'Estado de tus pedidos LIVI'],
+    };
+
+    async function navigate(section) {
+      closeSidebar();
+      S.section = section;
+      document.querySelectorAll('.nav-it').forEach(el => el.classList.remove('active'));
+      document.getElementById('nav-' + section)?.classList.add('active');
+      const [title, sub] = PAGES[section] || ['', ''];
+      document.getElementById('page-title').textContent = title;
+      document.getElementById('page-sub').textContent = sub;
+
+      const c = document.getElementById('main-content');
+      c.innerHTML = '<div class="loading">Cargando…</div>';
+      try {
+        if (!S.me) S.me = await api.get('/clientes/api/me');
+        if (!S.catalog) {
+          try { S.catalog = await (await fetch('/api/configurador-data')).json(); } catch { S.catalog = null; }
+        }
+        if (section === 'datos') renderDatos();
+        else if (section === 'vivienda') renderVivienda();
+        else if (section === 'pedidos') renderPedidos();
+      } catch (e) {
+        c.innerHTML = `<div style="color:#dc2626">Error: ${x(e.message)}</div>`;
+      }
+    }
+
+    /* ── Sección: Mis datos ───────────────────────────────────── */
+    const CONVIVE_OPTS = ['Teléfono', 'Prefiero Email', 'Prefiero Whastapp'];
+    const PERSONAS_OPTS = ['1', '2', '3', 'Más de 4'];
+    const URGENCIA_OPTS = ['Julio', 'Agosto', 'Septiembre', 'Me es indiferente'];
+    const PAINS_OPTS = ['Ahorro energía', 'Controlar una segunda residencia ', 'Reducir el consumo de luz y gas', 'Mejorar la seguridad del hogar', 'Detectar fugas o incidencias', 'Automatizar tareas del día a día', 'Tener todo controlado desde una única aplicación '];
+
+    function renderDatos() {
+      const r = S.me.registro;
+      const c = document.getElementById('main-content');
+      c.innerHTML = `
     <div class="card">
       <h3>Ficha de datos</h3>
       <div class="grid2">
@@ -370,88 +906,88 @@ function renderDatos() {
         <div class="mg"><label class="lbl">Teléfono</label><input class="inp" id="f-telefono" value="${xv(r.telefono)}"></div>
         <div class="mg"><label class="lbl">Localidad</label><input class="inp" id="f-localidad" value="${xv(r.localidad)}"></div>
         <div class="mg"><label class="lbl">Forma de contacto preferida</label>
-          <select class="inp" id="f-convive">${CONVIVE_OPTS.map(o => `<option ${o===r.convive?'selected':''}>${x(o)}</option>`).join('')}</select>
+          <select class="inp" id="f-convive">${CONVIVE_OPTS.map(o => `<option ${o === r.convive ? 'selected' : ''}>${x(o)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Personas en la vivienda</label>
-          <select class="inp" id="f-personas">${PERSONAS_OPTS.map(o => `<option value="${xv(o)}" ${o===String(r.personas)?'selected':''}>${x(o)}</option>`).join('')}</select>
+          <select class="inp" id="f-personas">${PERSONAS_OPTS.map(o => `<option value="${xv(o)}" ${o === String(r.personas) ? 'selected' : ''}>${x(o)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Cuándo empezar</label>
-          <select class="inp" id="f-urgencia">${URGENCIA_OPTS.map(o => `<option ${o===r.urgencia?'selected':''}>${x(o)}</option>`).join('')}</select>
+          <select class="inp" id="f-urgencia">${URGENCIA_OPTS.map(o => `<option ${o === r.urgencia ? 'selected' : ''}>${x(o)}</option>`).join('')}</select>
         </div>
       </div>
       <div class="mg" style="margin-top:6px">
         <label class="lbl">Intereses</label>
         <div class="chips" id="f-pains">
-          ${PAINS_OPTS.map(o => `<div class="chip ${r.pains.includes(o)?'on':''}" data-val="${xv(o)}" onclick="this.classList.toggle('on')">${x(o.trim())}</div>`).join('')}
+          ${PAINS_OPTS.map(o => `<div class="chip ${r.pains.includes(o) ? 'on' : ''}" data-val="${xv(o)}" onclick="this.classList.toggle('on')">${x(o.trim())}</div>`).join('')}
         </div>
       </div>
       <button class="btn btn-primary" style="margin-top:16px;font-family:var(--outfit);" onclick="saveDatos()">Guardar cambios</button>
     </div>
   `;
-}
+    }
 
-async function saveDatos() {
-  const pains = Array.from(document.querySelectorAll('#f-pains .chip.on')).map(el => el.dataset.val);
-  try {
-    await api.put('/clientes/api/me/registro', {
-      nombre: document.getElementById('f-nombre').value,
-      telefono: document.getElementById('f-telefono').value,
-      localidad: document.getElementById('f-localidad').value,
-      convive: document.getElementById('f-convive').value,
-      urgencia: document.getElementById('f-urgencia').value,
-      personas: document.getElementById('f-personas').value,
-      pains,
-    });
-    S.me = null;
-    await navigate('datos');
-    showToast('Datos actualizados');
-  } catch (e) {
-    showToast(e.message || 'Error al guardar', true);
-  }
-}
+    async function saveDatos() {
+      const pains = Array.from(document.querySelectorAll('#f-pains .chip.on')).map(el => el.dataset.val);
+      try {
+        await api.put('/clientes/api/me/registro', {
+          nombre: document.getElementById('f-nombre').value,
+          telefono: document.getElementById('f-telefono').value,
+          localidad: document.getElementById('f-localidad').value,
+          convive: document.getElementById('f-convive').value,
+          urgencia: document.getElementById('f-urgencia').value,
+          personas: document.getElementById('f-personas').value,
+          pains,
+        });
+        S.me = null;
+        await navigate('datos');
+        showToast('Datos actualizados');
+      } catch (e) {
+        showToast(e.message || 'Error al guardar', true);
+      }
+    }
 
-/* ── Sección: Mi vivienda ─────────────────────────────────── */
-const SUPERFICIE_OPTS = ['Menos de 75 m²', 'Entre 75 y 120 m²', 'Entre 120 y 200 m²', 'Más de 200 m²'];
-const USO_OPTS = [['habitual', 'Vivienda habitual'], ['segunda', 'Segunda residencia'], ['ambas', 'Ambas']];
-const SISTEMA_OPTS = [['Nada', 'No'], ['Alexa', 'Alexa'], ['Google Home', 'Google Home'], ['Apple Home', 'Apple Home'], ['Otro', 'Otro']];
-const TIPO_FALLBACK = [['piso', 'Piso'], ['adosado', 'Adosado'], ['independiente', 'Casa independiente'], ['chalet', 'Chalet']];
-const PRIORIDAD_FALLBACK = [['ahorro', 'Ahorro'], ['confort', 'Confort'], ['seguridad', 'Seguridad']];
+    /* ── Sección: Mi vivienda ─────────────────────────────────── */
+    const SUPERFICIE_OPTS = ['Menos de 75 m²', 'Entre 75 y 120 m²', 'Entre 120 y 200 m²', 'Más de 200 m²'];
+    const USO_OPTS = [['habitual', 'Vivienda habitual'], ['segunda', 'Segunda residencia'], ['ambas', 'Ambas']];
+    const SISTEMA_OPTS = [['Nada', 'No'], ['Alexa', 'Alexa'], ['Google Home', 'Google Home'], ['Apple Home', 'Apple Home'], ['Otro', 'Otro']];
+    const TIPO_FALLBACK = [['piso', 'Piso'], ['adosado', 'Adosado'], ['independiente', 'Casa independiente'], ['chalet', 'Chalet']];
+    const PRIORIDAD_FALLBACK = [['ahorro', 'Ahorro'], ['confort', 'Confort'], ['seguridad', 'Seguridad']];
 
-function renderVivienda() {
-  const h = S.me.house;
-  const devs = S.me.devices || [];
-  const tipoOpts = (S.catalog?.houseTypes || []).map(t => [t.id, t.label]);
-  const prioOpts = (S.catalog?.priorities || []).map(p => [p.id, p.label]);
-  const tipoList = tipoOpts.length ? tipoOpts : TIPO_FALLBACK;
-  const prioList = prioOpts.length ? prioOpts : PRIORIDAD_FALLBACK;
+    function renderVivienda() {
+      const h = S.me.house;
+      const devs = S.me.devices || [];
+      const tipoOpts = (S.catalog?.houseTypes || []).map(t => [t.id, t.label]);
+      const prioOpts = (S.catalog?.priorities || []).map(p => [p.id, p.label]);
+      const tipoList = tipoOpts.length ? tipoOpts : TIPO_FALLBACK;
+      const prioList = prioOpts.length ? prioOpts : PRIORIDAD_FALLBACK;
 
-  const c = document.getElementById('main-content');
-  if (!h) { c.innerHTML = '<div class="card"><h3>Ficha de vivienda</h3><p style="color:var(--gray2)">Todavía no has completado la configuración de tu vivienda.</p></div>'; return; }
+      const c = document.getElementById('main-content');
+      if (!h) { c.innerHTML = '<div class="card"><h3>Ficha de vivienda</h3><p style="color:var(--gray2)">Todavía no has completado la configuración de tu vivienda.</p></div>'; return; }
 
-  let devRows = devs.length ? devs.map(d => {
-    const total = (d.pricediscount || d.price) * d.cantidad;
-    return `<tr><td><strong>${x(d.label)}</strong></td><td>${d.cantidad}</td><td>${elecBadge(d.eleccion)}</td><td style="text-align:right">€${Number(d.pricediscount || d.price).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${total.toFixed(2)}</td></tr>`;
-  }).join('') : '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--gray)">Sin dispositivos configurados</td></tr>';
-  const sumTotal = devs.filter(d => d.eleccion === 'quiero').reduce((acc, d) => acc + ((d.pricediscount || d.price) * d.cantidad), 0);
+      let devRows = devs.length ? devs.map(d => {
+        const total = (d.pricediscount || d.price) * d.cantidad;
+        return `<tr><td><strong>${x(d.label)}</strong></td><td>${d.cantidad}</td><td>${elecBadge(d.eleccion)}</td><td style="text-align:right">€${Number(d.pricediscount || d.price).toFixed(2)}</td><td style="text-align:right;font-weight:700">€${total.toFixed(2)}</td></tr>`;
+      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--gray)">Sin dispositivos configurados</td></tr>';
+      const sumTotal = devs.filter(d => d.eleccion === 'quiero').reduce((acc, d) => acc + ((d.pricediscount || d.price) * d.cantidad), 0);
 
-  c.innerHTML = `
+      c.innerHTML = `
     <div class="card">
       <h3>Ficha de vivienda</h3>
       <div class="grid2">
         <div class="mg"><label class="lbl">Tipo de vivienda</label>
-          <select class="inp" id="v-tipo">${tipoList.map(([id,l]) => `<option value="${xv(id)}" ${id===h.tipo_vivienda?'selected':''}>${x(l)}</option>`).join('')}</select>
+          <select class="inp" id="v-tipo">${tipoList.map(([id, l]) => `<option value="${xv(id)}" ${id === h.tipo_vivienda ? 'selected' : ''}>${x(l)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Uso</label>
-          <select class="inp" id="v-uso">${USO_OPTS.map(([id,l]) => `<option value="${xv(id)}" ${id===h.uso_vivienda?'selected':''}>${x(l)}</option>`).join('')}</select>
+          <select class="inp" id="v-uso">${USO_OPTS.map(([id, l]) => `<option value="${xv(id)}" ${id === h.uso_vivienda ? 'selected' : ''}>${x(l)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Superficie</label>
-          <select class="inp" id="v-superficie">${SUPERFICIE_OPTS.map(o => `<option ${o===h.superficie?'selected':''}>${x(o)}</option>`).join('')}</select>
+          <select class="inp" id="v-superficie">${SUPERFICIE_OPTS.map(o => `<option ${o === h.superficie ? 'selected' : ''}>${x(o)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Sistema actual</label>
-          <select class="inp" id="v-sistema">${SISTEMA_OPTS.map(([id,l]) => `<option value="${xv(id)}" ${id===h.sistema_actual?'selected':''}>${x(l)}</option>`).join('')}</select>
+          <select class="inp" id="v-sistema">${SISTEMA_OPTS.map(([id, l]) => `<option value="${xv(id)}" ${id === h.sistema_actual ? 'selected' : ''}>${x(l)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Prioridad</label>
-          <select class="inp" id="v-prioridad">${prioList.map(([id,l]) => `<option value="${xv(id)}" ${id===h.prioridad?'selected':''}>${x(l)}</option>`).join('')}</select>
+          <select class="inp" id="v-prioridad">${prioList.map(([id, l]) => `<option value="${xv(id)}" ${id === h.prioridad ? 'selected' : ''}>${x(l)}</option>`).join('')}</select>
         </div>
         <div class="mg"><label class="lbl">Presupuesto tope (€)</label><input class="inp" type="number" min="0" id="v-presupuesto" value="${xv(h.presupuesto ?? '')}"></div>
         <div class="mg"><label class="lbl">Zonas / estancias</label><input class="inp" type="number" min="1" max="10" id="v-zonas" value="${xv(h.zonas ?? '')}"></div>
@@ -469,36 +1005,36 @@ function renderVivienda() {
       <p style="font-size:12px;color:var(--gray);margin-top:12px">La selección de equipos se gestiona desde el configurador de la web.</p>
     </div>
   `;
-}
+    }
 
-async function saveVivienda() {
-  try {
-    await api.put('/clientes/api/me/vivienda', {
-      tipo_vivienda: document.getElementById('v-tipo').value,
-      uso_vivienda: document.getElementById('v-uso').value,
-      sistema_actual: document.getElementById('v-sistema').value,
-      superficie: document.getElementById('v-superficie').value,
-      prioridad: document.getElementById('v-prioridad').value,
-      presupuesto: Number(document.getElementById('v-presupuesto').value) || null,
-      zonas: Number(document.getElementById('v-zonas').value) || null,
-    });
-    S.me = null;
-    await navigate('vivienda');
-    showToast('Vivienda actualizada');
-  } catch (e) {
-    showToast(e.message || 'Error al guardar', true);
-  }
-}
+    async function saveVivienda() {
+      try {
+        await api.put('/clientes/api/me/vivienda', {
+          tipo_vivienda: document.getElementById('v-tipo').value,
+          uso_vivienda: document.getElementById('v-uso').value,
+          sistema_actual: document.getElementById('v-sistema').value,
+          superficie: document.getElementById('v-superficie').value,
+          prioridad: document.getElementById('v-prioridad').value,
+          presupuesto: Number(document.getElementById('v-presupuesto').value) || null,
+          zonas: Number(document.getElementById('v-zonas').value) || null,
+        });
+        S.me = null;
+        await navigate('vivienda');
+        showToast('Vivienda actualizada');
+      } catch (e) {
+        showToast(e.message || 'Error al guardar', true);
+      }
+    }
 
-/* ── Sección: Mis pedidos ─────────────────────────────────── */
-const PEDIDOS = [
-  { nombre: 'Livihub', estado: 'Pendiente' },
-];
+    /* ── Sección: Mis pedidos ─────────────────────────────────── */
+    const PEDIDOS = [
+      { nombre: 'Livihub', estado: 'Pendiente' },
+    ];
 
-function renderPedidos() {
-  const c = document.getElementById('main-content');
-  c.innerHTML = `<div class="card"><h3>Mis pedidos</h3>` +
-    PEDIDOS.map(p => `
+    function renderPedidos() {
+      const c = document.getElementById('main-content');
+      c.innerHTML = `<div class="card"><h3>Mis pedidos</h3>` +
+        PEDIDOS.map(p => `
       <div class="order-card">
         <div>
           <div class="order-name">${x(p.nombre)}</div>
@@ -507,20 +1043,21 @@ function renderPedidos() {
         <span class="badge bg-yellow">${x(p.estado)}</span>
       </div>
     `).join('') +
-    `</div>`;
-}
+        `</div>`;
+    }
 
-/* ── Helpers ─────────────────────────────────────────────── */
-function x(s)  { if (s === null || s === undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function xv(s) { if (s === null || s === undefined) return ''; return String(s).replace(/"/g,'&quot;'); }
-function elecBadge(v) {
-  if (v === 'quiero') return '<span class="badge bg-blue">Lo quiero</span>';
-  if (v === 'tengo')  return '<span class="badge bg-green">Ya lo tengo</span>';
-  return '<span class="badge bg-gray">—</span>';
-}
+    /* ── Helpers ─────────────────────────────────────────────── */
+    function x(s) { if (s === null || s === undefined) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function xv(s) { if (s === null || s === undefined) return ''; return String(s).replace(/"/g, '&quot;'); }
+    function elecBadge(v) {
+      if (v === 'quiero') return '<span class="badge bg-blue">Lo quiero</span>';
+      if (v === 'tengo') return '<span class="badge bg-green">Ya lo tengo</span>';
+      return '<span class="badge bg-gray">—</span>';
+    }
 
-/* ── Init ────────────────────────────────────────────────── */
-if (S.token) { enterApp(); }
-</script>
+    /* ── Init ────────────────────────────────────────────────── */
+    if (S.token) { enterApp(); }
+  </script>
 </body>
+
 </html>
