@@ -29,30 +29,6 @@ importers:
       mysql2:
         specifier: ^3.23.0
         version: 3.24.6(@types/node@26.6.6)
-
-  Z:/GITHUB/livi_clientes:
-    dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1089.0
-        version: 3.1161.0
-      '@aws-sdk/s3-request-presigner':
-        specifier: ^3.1089.0
-        version: 3.1161.0
-      bcrypt:
-        specifier: ^5.1.1
-        version: 5.1.1
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.6
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.6.1
-      express:
-        specifier: ^4.19.2
-        version: 4.22.3
-      mysql2:
-        specifier: ^3.23.0
-        version: 3.24.6(@types/node@26.6.6)
       nodemailer:
         specifier: ^10.3.1
         version: 10.3.1
