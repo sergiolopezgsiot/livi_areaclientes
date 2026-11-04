@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIVI · Admin Data CRUD</title>
+  <link rel="icon" href="/favicon.png">
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: 'Outfit';
+      src: url('/assets/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    :root {
+      --ink: #1d1d1f;
+      --gray: #86868b;
+      --gray2: #6e6e73;
+      --blue: #0605fe;
+      --bg2: #f4f4f6;
+      --line: #d2d2d7;
+      --green: #16a34a;
+      --danger: #dc2626;
+      --sf: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --outfit: 'Outfit', var(--sf);
+      --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: var(--outfit);
+      font-size: 15px;
+      background: var(--bg2);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Login View ────────────────────────────────────────── */
+    #login-view {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #fff;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 390px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+    }
+
+    .login-logo {
+      height: 30px;
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .login-badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 980px;
+      margin-bottom: 8px;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: var(--gray2);
+      margin-bottom: 24px;
+    }
+
+    .lbl {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray2);
+      margin-bottom: 6px;
+    }
+
+    .inp,
+    select.inp,
+    textarea.inp {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 13px;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .15s, background .15s;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    textarea.inp {
+      min-height: 80px;
+      resize: vertical;
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .inp:focus,
+    select.inp:focus,
+    textarea.inp:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(6, 5, 254, .08);
+    }
+
+    .inp:disabled {
+      background: var(--bg2);
+      color: var(--gray);
+      cursor: not-allowed;
+    }
+
+    .mg {
+      margin-bottom: 14px;
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 980px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      font-family: inherit;
+    }
+
+    .btn-login:hover {
+      opacity: .92;
+    }
+
+    .btn-login:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
+    .form-err {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* ── App Layout ────────────────────────────────────────── */
+    #app-view {
+      display: none;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .layout {
+      display: flex;
+      height: 100%;
+    }
+
+    .sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+
+    .sb-head {
+      padding: 20px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sb-logo-img {
+      height: 24px;
+      display: block;
+    }
+
+    .sb-tag {
+      font-size: 11px;
+      color: var(--blue);
+      font-weight: 700;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .sb-section-title {
+      padding: 14px 16px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 4px 10px 12px;
+      overflow-y: auto;
+    }
+
+    .nav-it {
+      font-family: var(--outfit);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 3px;
+      transition: background .12s, color .12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-it:hover {
+      background: var(--bg2);
+    }
+
+    .nav-it.active {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .nav-count {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 980px;
+      background: var(--bg2);
+      color: var(--gray2);
+      font-weight: 600;
+    }
+
+    .nav-it.active .nav-count {
+      background: rgba(255, 255, 255, .2);
+      color: #fff;
+    }
+
+    .sb-foot {
+      padding: 12px 10px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--gray2);
+      font-size: 13px;
+      font-weight: 600;
+      width: 100%;
+      background: none;
+      border: 1px solid var(--line);
+      font-family: inherit;
+    }
+
+    .btn-logout:hover {
+      background: #fef2f2;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--bg2);
+      overflow: hidden;
+    }
+
+    .mhdr {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .mhdr-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mhdr-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .mhdr-title p {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 240px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 980px;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      background: var(--bg2);
+    }
+
+    .search-box input:focus {
+      background: #fff;
+      border-color: var(--blue);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 15px;
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-family: inherit;
+      transition: opacity .15s, background .15s;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      opacity: .9;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg2);
+    }
+
+    .btn-danger {
+      background: #fef2f2;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    .btn-danger:hover {
+      background: #fee2e2;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    /* ── Table Area ────────────────────────────────────────── */
+    .mcontent {
+      flex: 1;
+      padding: 20px 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .03);
+    }
+
+    .table-wrap {
+      flex: 1;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f9f9fb;
+      text-align: left;
+      padding: 11px 14px;
+      font-weight: 700;
+      color: var(--ink);
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover {
+      background: #f0f0f5;
+    }
+
+    thead th.actions-col {
+      cursor: default;
+      text-align: right;
+      position: sticky;
+      right: 0;
+      background: #f9f9fb;
+      box-shadow: -1px 0 0 var(--line);
+    }
+
+    .col-type {
+      display: block;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--gray);
+      font-family: var(--mono);
+    }
+
+    .pk-badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover td {
+      background: #f8faff;
+    }
+
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #ededf0;
+      max-width: 280px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    tbody td.actions-cell {
+      text-align: right;
+      white-space: nowrap;
+      max-width: none;
+      position: sticky;
+      right: 0;
+      background: #fff;
+      box-shadow: -1px 0 0 #ededf0;
+    }
+
+    tbody tr:hover td.actions-cell {
+      background: #f8faff;
+    }
+
+    .null-val {
+      color: #a1a1aa;
+      font-style: italic;
+      font-size: 12px;
+    }
+
+    .table-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--gray2);
+      flex-shrink: 0;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Modal ─────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 80;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .2);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-head h3 {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--gray2);
+      line-height: 1;
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+    }
+
+    .form-field-full {
+      grid-column: 1 / -1;
+    }
+
+    .field-meta {
+      font-size: 11px;
+      color: var(--gray);
+      font-weight: 400;
+      margin-left: 4px;
+      font-family: var(--mono);
+    }
+
+    .null-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--gray2);
+      float: right;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .modal-foot {
+      padding: 14px 24px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      background: #f9f9fb;
+    }
+
+    /* ── Toast & Mobile ────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 980px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.err {
+      background: var(--danger);
+    }
+
+    .toast.ok {
+      background: var(--blue);
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 22px;
+      height: 22px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    .hamburger span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background: var(--ink);
+      border-radius: 2px;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 45;
+    }
+
+    .sidebar-overlay.show {
+      display: block;
+    }
+
+    @media (max-width: 860px) {
+      .hamburger {
+        display: flex;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 8px 0 24px rgba(0, 0, 0, .18);
+      }
+
+      .mcontent {
+        padding: 12px;
+      }
+
+      .mhdr {
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════ LOGIN ══ -->
+  <div id="login-view">
+    <div class="login-card">
+      <img src="/assets/logolivi1.png" alt="Livi" class="login-logo">
+      <span class="login-badge">Admin Data CRUD</span>
+      <div class="login-sub">Gestión directa de la base de datos</div>
+
+      <form id="login-form" onsubmit="doLogin(event)">
+        <div class="mg">
+          <label class="lbl" for="li-user">Usuario</label>
+          <input class="inp" type="text" id="li-user" autocomplete="username" required placeholder="admin">
+        </div>
+        <div class="mg">
+          <label class="lbl" for="li-pass">Contraseña</label>
+          <input class="inp" type="password" id="li-pass" autocomplete="current-password" required>
+        </div>
+        <button class="btn-login" id="login-btn" type="submit">Acceder al panel</button>
+        <div class="form-err" id="login-err">Usuario o contraseña incorrectos.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ APP ══ -->
+  <div id="app-view">
+    <div class="layout">
+      <div class="sidebar" id="sidebar">
+        <div class="sb-head">
+          <img src="/assets/logolivi1.png" alt="Livi" class="sb-logo-img">
+          <div class="sb-tag">Admin Data · CRUD</div>
+        </div>
+        <div class="sb-section-title">Tablas de la BD</div>
+        <div class="sb-nav" id="tables-nav"></div>
+        <div class="sb-foot">
+          <button class="btn-logout" onclick="refreshAll()">↻ Recargar esquema</button>
+          <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="mhdr">
+          <div class="mhdr-left">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">
+              <span></span><span></span><span></span>
+            </button>
+            <div class="mhdr-title">
+              <h2 id="table-title">Selecciona una tabla</h2>
+              <p id="table-subtitle">Explora, crea, edita y elimina registros</p>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <div class="search-box">
+              <input type="search" id="search-input" placeholder="Buscar en esta tabla…" oninput="onSearchInput()">
+            </div>
+            <button class="btn btn-secondary" onclick="loadCurrentTable()">↻ Actualizar</button>
+            <button class="btn btn-primary" id="btn-new-row" onclick="openCreateModal()">+ Nuevo registro</button>
+          </div>
+        </div>
+
+        <div class="mcontent">
+          <div class="table-card">
+            <div class="table-wrap" id="table-wrap">
+              <div style="padding:40px;text-align:center;color:var(--gray)">Cargando datos…</div>
+            </div>
+            <div class="table-footer" id="table-footer">
+              <div id="pagination-info">—</div>
+              <div class="pagination">
+                <button class="btn btn-secondary btn-sm" id="btn-prev" onclick="changePage(-1)">← Anterior</button>
+                <span id="page-indicator" style="padding:0 8px;font-weight:600">1</span>
+                <button class="btn btn-secondary btn-sm" id="btn-next" onclick="changePage(1)">Siguiente →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ MODAL CREATE / EDIT ══ -->
+  <div class="modal-backdrop" id="row-modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">Registro</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <form id="row-form" onsubmit="submitRowForm(event)" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="modal-save-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    'use strict';
+
+    const API_BASE = window.location.pathname.startsWith('/clientes')
+      ? '/clientes/admindata/api'
+      : '/admindata/api';
+
+    const S = {
+      token: localStorage.getItem('livi_admin_tok'),
+      tables: [],
+      currentTable: null,
+      columns: [],
+      primaryKeys: [],
+      rows: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      search: '',
+      sortBy: '',
+      sortDir: 'DESC',
+      modalMode: 'create', // 'create' | 'edit'
+      editingRowIndex: null,
+      searchTimer: null
+    };
+
+    /* ── API Helper ────────────────────────────────────────── */
+    const api = {
+      hdr() {
+        return {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + S.token
+        };
+      },
+      async req(method, endpoint, body) {
+        const opts = { method, headers: api.hdr() };
+        if (body !== undefined) opts.body = JSON.stringify(body);
+        const r = await fetch(API_BASE + endpoint, opts);
+        if (r.status === 401 && endpoint !== '/login') {
+          doLogout();
+          throw new Error('Sesión expirada');
+        }
+        const data = await r.json();
+        if (!r.ok || data.success === false) {
+          throw new Error(data.error || r.statusText);
+        }
+        return data;
+      }
+    };
+
+    function showToast(msg, isErr = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + (isErr ? 'err' : 'ok');
+      clearTimeout(t._tid);
+      t._tid = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function x(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function xv(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/"/g, '&quot;');
+    }
+
+    /* ── Auth ──────────────────────────────────────────────── */
+    async function doLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('login-btn');
+      const err = document.getElementById('login-err');
+      btn.disabled = true;
+      btn.textContent = 'Verificando…';
+      err.style.display = 'none';
+
+      try {
+        const res = await api.req('POST', '/login', {
+          username: document.getElementById('li-user').value.trim(),
+          password: document.getElementById('li-pass').value
+        });
+        S.token = res.token;
+        localStorage.setItem('livi_admin_tok', res.token);
+        enterApp();
+      } catch (e2) {
+        err.textContent = e2.message || 'Credenciales incorrectas.';
+        err.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Acceder al panel';
+      }
+    }
+
+    async function doLogout() {
+      const old = S.token;
+      S.token = null;
+      localStorage.removeItem('livi_admin_tok');
+      if (old) {
+        try {
+          await fetch(API_BASE + '/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + old }
+          });
+        } catch {}
+      }
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('login-view').style.display = 'flex';
+    }
+
+    async function enterApp() {
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('app-view').style.display = 'block';
+      await refreshAll();
+    }
+
+    /* ── Sidebar & Tables ──────────────────────────────────── */
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const open = !sb.classList.contains('open');
+      sb.classList.toggle('open', open);
+      document.getElementById('sidebar-overlay').classList.toggle('show', open);
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-overlay').classList.remove('show');
+    }
+
+    async function refreshAll() {
+      const nav = document.getElementById('tables-nav');
+      nav.innerHTML = '<div style="padding:12px;font-size:12px;color:var(--gray)">Cargando tablas…</div>';
+      try {
+        const data = await api.req('GET', '/tables');
+        S.tables = data.tables || [];
+        renderSidebar();
+        if (S.tables.length > 0) {
+          const target = S.tables.find(t => t.name === S.currentTable)?.name
+            || S.tables.find(t => t.name === 'registros')?.name
+            || S.tables[0].name;
+          await selectTable(target);
+        } else {
+          document.getElementById('table-wrap').innerHTML =
+            '<div style="padding:40px;text-align:center;color:var(--gray)">No se encontraron tablas en la base de datos.</div>';
+        }
+      } catch (err) {
+        showToast('Error al cargar tablas: ' + err.message, true);
+        nav.innerHTML = `<div style="padding:12px;font-size:12px;color:var(--danger)">Error: ${x(err.message)}</div>`;
+      }
+    }
+
+    function renderSidebar() {
+      const nav = document.getElementById('tables-nav');
+      nav.innerHTML = S.tables.map(t => `
+        <button class="nav-it ${t.name === S.currentTable ? 'active' : ''}" onclick="selectTable('${xv(t.name)}')">
+          <span>${x(t.name)}</span>
+          <span class="nav-count">${t.count}</span>
+        </button>
+      `).join('');
+    }
+
+    async function selectTable(tableName) {
+      closeSidebar();
+      if (S.currentTable !== tableName) {
+        S.currentTable = tableName;
+        S.page = 1;
+        S.search = '';
+        S.sortBy = '';
+        S.sortDir = 'DESC';
+        document.getElementById('search-input').value = '';
+      }
+      renderSidebar();
+      await loadCurrentTable();
+    }
+
+    function onSearchInput() {
+      clearTimeout(S.searchTimer);
+      S.searchTimer = setTimeout(() => {
+        S.search = document.getElementById('search-input').value.trim();
+        S.page = 1;
+        loadCurrentTable();
+      }, 280);
+    }
+
+    function toggleSort(colName) {
+      if (S.sortBy === colName) {
+        S.sortDir = S.sortDir === 'ASC' ? 'DESC' : 'ASC';
+      } else {
+        S.sortBy = colName;
+        S.sortDir = 'ASC';
+      }
+      loadCurrentTable();
+    }
+
+    function changePage(delta) {
+      const maxPage = Math.max(1, Math.ceil(S.total / S.limit));
+      const next = S.page + delta;
+      if (next < 1 || next > maxPage) return;
+      S.page = next;
+      loadCurrentTable();
+    }
+
+    async function loadCurrentTable() {
+      if (!S.currentTable) return;
+      const wrap = document.getElementById('table-wrap');
+      wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray)">Cargando registros…</div>';
+
+      try {
+        const qs = new URLSearchParams({
+          page: S.page,
+          limit: S.limit,
+          search: S.search,
+          sortBy: S.sortBy,
+          sortDir: S.sortDir
+        });
+        const data = await api.req('GET', `/tables/${encodeURIComponent(S.currentTable)}?${qs}`);
+        S.columns = data.columns || [];
+        S.primaryKeys = data.primaryKeys || [];
+        S.rows = data.rows || [];
+        S.total = data.total || 0;
+        S.sortBy = data.sortBy || '';
+        S.sortDir = data.sortDir || 'DESC';
+
+        // Update sidebar badge count when unfiltered
+        if (!S.search) {
+          const tblMeta = S.tables.find(t => t.name === S.currentTable);
+          if (tblMeta) {
+            tblMeta.count = S.total;
+            renderSidebar();
+          }
+        }
+
+        document.getElementById('table-title').textContent = S.currentTable;
+        document.getElementById('table-subtitle').textContent =
+          `${S.columns.length} columnas · Clave primaria: ${S.primaryKeys.join(', ') || 'ninguna'}`;
+
+        renderTable();
+      } catch (err) {
+        wrap.innerHTML = `<div style="padding:40px;text-align:center;color:var(--danger)">Error: ${x(err.message)}</div>`;
+        showToast(err.message, true);
+      }
+    }
+
+    function formatCellValue(val) {
+      if (val === null || val === undefined) {
+        return '<span class="null-val">NULL</span>';
+      }
+      if (typeof val === 'object') {
+        const str = JSON.stringify(val);
+        return `<span title="${xv(str)}" style="font-family:var(--mono);font-size:12px">${x(str)}</span>`;
+      }
+      const str = String(val);
+      return `<span title="${xv(str)}">${x(str)}</span>`;
+    }
+
+    function renderTable() {
+      const wrap = document.getElementById('table-wrap');
+      if (S.columns.length === 0) {
+        wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--gray)">Sin columnas</div>';
+        return;
+      }
+
+      const ths = S.columns.map(col => {
+        const isPk = S.primaryKeys.includes(col.name) && col.key === 'PRI';
+        const sortArrow = S.sortBy === col.name ? (S.sortDir === 'ASC' ? ' ↑' : ' ↓') : '';
+        return `
+          <th onclick="toggleSort('${xv(col.name)}')">
+            ${x(col.name)}${isPk ? '<span class="pk-badge">PK</span>' : ''}${sortArrow}
+            <span class="col-type">${x(col.type)}</span>
+          </th>
+        `;
+      }).join('');
+
+      const trs = S.rows.length ? S.rows.map((row, idx) => {
+        const tds = S.columns.map(col => `<td>${formatCellValue(row[col.name])}</td>`).join('');
+        return `
+          <tr>
+            ${tds}
+            <td class="actions-cell">
+              <button class="btn btn-secondary btn-sm" onclick="openEditModal(${idx})">Editar</button>
+              <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="deleteRow(${idx})">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      }).join('') : `
+        <tr>
+          <td colspan="${S.columns.length + 1}" style="text-align:center;padding:36px;color:var(--gray)">
+            No hay registros que coincidan con la búsqueda.
+          </td>
+        </tr>
+      `;
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              ${ths}
+              <th class="actions-col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${trs}
+          </tbody>
+        </table>
+      `;
+
+      const maxPage = Math.max(1, Math.ceil(S.total / S.limit));
+      const from = S.total === 0 ? 0 : (S.page - 1) * S.limit + 1;
+      const to = Math.min(S.total, S.page * S.limit);
+      document.getElementById('pagination-info').textContent =
+        `Mostrando ${from}–${to} de ${S.total} registros`;
+      document.getElementById('page-indicator').textContent = `${S.page} / ${maxPage}`;
+      document.getElementById('btn-prev').disabled = S.page <= 1;
+      document.getElementById('btn-next').disabled = S.page >= maxPage;
+    }
+
+    /* ── Create / Edit Modal ───────────────────────────────── */
+    function buildPkObject(row) {
+      const pk = {};
+      for (const key of S.primaryKeys) {
+        pk[key] = row[key] !== undefined ? row[key] : null;
+      }
+      return pk;
+    }
+
+    function openCreateModal() {
+      if (!S.currentTable) return;
+      S.modalMode = 'create';
+      S.editingRowIndex = null;
+      document.getElementById('modal-title').textContent = `Nuevo registro en ${S.currentTable}`;
+      renderModalFields({});
+      document.getElementById('row-modal').classList.add('open');
+    }
+
+    function openEditModal(rowIndex) {
+      const row = S.rows[rowIndex];
+      if (!row) return;
+      S.modalMode = 'edit';
+      S.editingRowIndex = rowIndex;
+      document.getElementById('modal-title').textContent = `Editar registro en ${S.currentTable}`;
+      renderModalFields(row);
+      document.getElementById('row-modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('row-modal').classList.remove('open');
+    }
+
+    function renderModalFields(row) {
+      const container = document.getElementById('modal-body');
+      const isCreate = S.modalMode === 'create';
+      const hasPasswordHash = S.columns.some(c => c.name === 'password_hash');
+
+      const fieldsHtml = S.columns.map(col => {
+        const isAutoInc = (col.extra || '').toLowerCase().includes('auto_increment');
+        const val = row[col.name];
+        const isNull = isCreate
+          ? (val === undefined ? (col.default === null && col.nullable) : val === null)
+          : (val === null || val === undefined);
+
+        let displayVal = '';
+        if (!isNull && val !== undefined && val !== null) {
+          displayVal = typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val);
+        } else if (isCreate && col.default !== null && col.default !== undefined && !isAutoInc) {
+          displayVal = String(col.default);
+        }
+
+        const typeLower = (col.type || '').toLowerCase();
+        const isLongText = typeLower.includes('text') || typeLower.includes('json') || col.name === 'pains' || col.name === 'tags';
+
+        const nullCheckbox = col.nullable ? `
+          <label class="null-toggle">
+            <input type="checkbox" id="null-${xv(col.name)}" ${isNull && !displayVal ? 'checked' : ''} onchange="onToggleNull('${xv(col.name)}', this.checked)">
+            NULL
+          </label>
+        ` : '';
+
+        const placeholder = isAutoInc && isCreate ? 'Auto-generado (dejar vacío)' : '';
+        const inputEl = isLongText
+          ? `<textarea class="inp" id="field-${xv(col.name)}" placeholder="${xv(placeholder)}" oninput="onFieldInput('${xv(col.name)}')">${x(displayVal)}</textarea>`
+          : `<input class="inp" type="text" id="field-${xv(col.name)}" value="${xv(displayVal)}" placeholder="${xv(placeholder)}" oninput="onFieldInput('${xv(col.name)}')">`;
+
+        return `
+          <div class="mg ${isLongText ? 'form-field-full' : ''}">
+            <label class="lbl" for="field-${xv(col.name)}">
+              ${x(col.name)}
+              <span class="field-meta">${x(col.type)}${isAutoInc ? ' · auto' : ''}</span>
+              ${nullCheckbox}
+            </label>
+            ${inputEl}
+          </div>
+        `;
+      }).join('');
+
+      const passwordHelperHtml = hasPasswordHash ? `
+        <div class="mg form-field-full" style="background:#f8faff;border:1px solid #dbeafe;padding:12px 14px;border-radius:12px">
+          <label class="lbl" for="field-_new_password" style="color:var(--blue)">
+            Establecer contraseña en texto plano (opcional · genera bcrypt automáticamente en password_hash)
+          </label>
+          <input class="inp" type="text" id="field-_new_password" placeholder="Escribe aquí una nueva clave para encriptarla con bcrypt…">
+        </div>
+      ` : '';
+
+      container.innerHTML = `<div class="form-grid">${fieldsHtml}${passwordHelperHtml}</div>`;
+    }
+
+    function onToggleNull(colName, checked) {
+      const inp = document.getElementById('field-' + colName);
+      if (!inp) return;
+      if (checked) {
+        inp.value = '';
+      }
+    }
+
+    function onFieldInput(colName) {
+      const chk = document.getElementById('null-' + colName);
+      if (chk && chk.checked) {
+        chk.checked = false;
+      }
+    }
+
+    async function submitRowForm(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('modal-save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Guardando…';
+
+      try {
+        const data = {};
+        for (const col of S.columns) {
+          const inp = document.getElementById('field-' + col.name);
+          const nullChk = document.getElementById('null-' + col.name);
+          if (!inp) continue;
+
+          const isAutoInc = (col.extra || '').toLowerCase().includes('auto_increment');
+          if (S.modalMode === 'create' && isAutoInc && inp.value.trim() === '') {
+            continue;
+          }
+
+          if (nullChk && nullChk.checked) {
+            data[col.name] = null;
+          } else {
+            data[col.name] = inp.value;
+          }
+        }
+
+        const newPassInp = document.getElementById('field-_new_password');
+        if (newPassInp && newPassInp.value.trim() !== '') {
+          data._new_password = newPassInp.value.trim();
+        }
+
+        if (S.modalMode === 'create') {
+          await api.req('POST', `/tables/${encodeURIComponent(S.currentTable)}`, { data });
+          showToast('Registro creado correctamente');
+        } else {
+          const origRow = S.rows[S.editingRowIndex];
+          const pk = buildPkObject(origRow);
+          await api.req('PUT', `/tables/${encodeURIComponent(S.currentTable)}`, { pk, data });
+          showToast('Registro actualizado correctamente');
+        }
+
+        closeModal();
+        await loadCurrentTable();
+      } catch (err) {
+        showToast('Error al guardar: ' + err.message, true);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+      }
+    }
+
+    /* ── Delete Row ────────────────────────────────────────── */
+    async function deleteRow(rowIndex) {
+      const row = S.rows[rowIndex];
+      if (!row) return;
+      const pk = buildPkObject(row);
+      const pkDesc = Object.entries(pk).map(([k, v]) => `${k}=${v}`).join(', ');
+      if (!confirm(`¿Seguro que deseas eliminar este registro de ${S.currentTable} (${pkDesc})? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+
+      try {
+        await api.req('DELETE', `/tables/${encodeURIComponent(S.currentTable)}`, { pk });
+        showToast('Registro eliminado');
+        await loadCurrentTable();
+      } catch (err) {
+        showToast('Error al eliminar: ' + err.message, true);
+      }
+    }
+
+    /* ── Init ──────────────────────────────────────────────── */
+    if (S.token) {
+      enterApp();
+    }
+  </script>
+</body>
+
+</html>
+

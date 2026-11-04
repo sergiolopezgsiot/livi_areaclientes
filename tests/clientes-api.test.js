@@ -2,6 +2,7 @@ const http = require('http');
 const express = require('express');
 const assert = require('assert');
 const { setupClientesRoutes } = require('../clientes-server');
+const { setupAdminDataRoutes } = require('../admindata-server');
 
 function createFakePool() {
   return {
@@ -30,6 +31,46 @@ function createFakePool() {
           ]]);
         }
         return Promise.resolve([[]]);
+      }
+
+      if (sql === 'SHOW TABLES') {
+        return Promise.resolve([[{ Tables_in_db: 'registros' }, { Tables_in_db: 'devices' }]]);
+      }
+
+      if (sql.includes('SHOW COLUMNS FROM `registros`')) {
+        return Promise.resolve([[
+          { Field: 'iduser', Type: 'int(11)', Null: 'NO', Key: 'PRI', Default: null, Extra: 'auto_increment' },
+          { Field: 'nombre', Type: 'varchar(255)', Null: 'NO', Key: '', Default: null, Extra: '' },
+          { Field: 'email', Type: 'varchar(255)', Null: 'NO', Key: '', Default: null, Extra: '' },
+          { Field: 'password_hash', Type: 'varchar(255)', Null: 'YES', Key: '', Default: null, Extra: '' }
+        ]]);
+      }
+
+      if (sql.includes('SHOW COLUMNS FROM `devices`')) {
+        return Promise.resolve([[
+          { Field: 'id', Type: 'varchar(64)', Null: 'NO', Key: 'PRI', Default: null, Extra: '' },
+          { Field: 'label', Type: 'varchar(255)', Null: 'NO', Key: '', Default: null, Extra: '' }
+        ]]);
+      }
+
+      if (sql.includes('SELECT COUNT(*) AS cnt FROM') || sql.includes('SELECT COUNT(*) AS total FROM')) {
+        return Promise.resolve([[{ cnt: 1, total: 1 }]]);
+      }
+
+      if (sql.startsWith('SELECT * FROM `registros`')) {
+        return Promise.resolve([[{ iduser: 42, nombre: 'Sergio', email: 'sergio@keycode.es', password_hash: '$2b$10$xxx' }]]);
+      }
+
+      if (sql.startsWith('INSERT INTO `registros`')) {
+        return Promise.resolve([{ insertId: 99, affectedRows: 1 }]);
+      }
+
+      if (sql.startsWith('UPDATE `registros`')) {
+        return Promise.resolve([{ affectedRows: 1 }]);
+      }
+
+      if (sql.startsWith('DELETE FROM `registros`')) {
+        return Promise.resolve([{ affectedRows: 1 }]);
       }
 
       return Promise.resolve([[]]);
@@ -83,6 +124,7 @@ function requestJson(app, pathName, method = 'GET', headers = {}, body) {
   const app = express();
   app.use(express.json());
   setupClientesRoutes(app, createFakePool());
+  setupAdminDataRoutes(app, createFakePool());
 
   const missingToken = await requestJson(app, '/api/cliente?email=sergio@keycode.es');
   assert.strictEqual(missingToken.status, 401, 'Debe requerir bearer token');
@@ -97,9 +139,51 @@ function requestJson(app, pathName, method = 'GET', headers = {}, body) {
   assert.strictEqual(validResponse.body.devices.length, 2);
   assert.ok(!('password_hash' in validResponse.body.cliente), 'No debe devolver password_hash');
 
-  console.log('clientes-api test passed');
+  // Test AdminData Auth & CRUD
+  const badLogin = await requestJson(app, '/admindata/api/login', 'POST', {}, {
+    username: 'admin',
+    password: 'wrong'
+  });
+  assert.strictEqual(badLogin.status, 401, 'Debe rechazar clave incorrecta en admindata');
+
+  const okLogin = await requestJson(app, '/admindata/api/login', 'POST', {}, {
+    username: 'admin',
+    password: 'Global2026!'
+  });
+  assert.strictEqual(okLogin.status, 200, 'Debe permitir login admin con Global2026!');
+  assert.ok(okLogin.body.token, 'Debe devolver token de admin');
+
+  const adminHeaders = { Authorization: `Bearer ${okLogin.body.token}` };
+
+  const tablesRes = await requestJson(app, '/admindata/api/tables', 'GET', adminHeaders);
+  assert.strictEqual(tablesRes.status, 200);
+  assert.strictEqual(tablesRes.body.tables.length, 2);
+
+  const rowsRes = await requestJson(app, '/admindata/api/tables/registros', 'GET', adminHeaders);
+  assert.strictEqual(rowsRes.status, 200);
+  assert.strictEqual(rowsRes.body.rows.length, 1);
+
+  const createRes = await requestJson(app, '/admindata/api/tables/registros', 'POST', adminHeaders, {
+    data: { nombre: 'Nuevo', email: 'nuevo@livi.es', _new_password: 'secret' }
+  });
+  assert.strictEqual(createRes.status, 201);
+  assert.strictEqual(createRes.body.insertId, 99);
+
+  const updateRes = await requestJson(app, '/admindata/api/tables/registros', 'PUT', adminHeaders, {
+    pk: { iduser: 42 },
+    data: { nombre: 'Sergio Editado' }
+  });
+  assert.strictEqual(updateRes.status, 200);
+  assert.strictEqual(updateRes.body.affectedRows, 1);
+
+  const deleteRes = await requestJson(app, '/admindata/api/tables/registros', 'DELETE', adminHeaders, {
+    pk: { iduser: 42 }
+  });
+  assert.strictEqual(deleteRes.status, 200);
+  assert.strictEqual(deleteRes.body.affectedRows, 1);
+
+  console.log('clientes-api and admindata CRUD tests passed');
 })().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-

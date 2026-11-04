@@ -6,6 +6,7 @@ const path = require('path');
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { setupClientesRoutes } = require('./clientes-server');
+const { setupAdminDataRoutes } = require('./admindata-server');
 
 const s3Client = new S3Client({
     region: process.env.AWS_REGION || 'us-east-1'
@@ -105,6 +106,9 @@ app.get('/api/configurador-data', async (req, res) => {
 
 // Clientes routes (mounted at / and /clientes)
 setupClientesRoutes(app, pool);
+
+// Admin Data CRUD routes (mounted at /admindata and /clientes/admindata)
+setupAdminDataRoutes(app, pool);
 
 // Serve static files from root directory
 app.use(express.static(__dirname));
