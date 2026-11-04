@@ -1,16 +1,104 @@
 const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
 
 // In-memory token store for the clientes area
 const clienteTokens = new Map(); // token -> iduser
+const passwordResetTokens = new Map(); // token -> { iduser, email, expiresAt }
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-function setupClientesRoutes(app, pool) {
+function createSmtpTransporter() {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT || 587);
+    const secure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465;
+    const user = process.env.SMTP_USER || 'info@smartlivi.es';
+    const pass = process.env.SMTP_PASS;
+
+    if (!host || !pass) {
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        auth: { user, pass }
+    });
+}
+
+function buildResetEmailHtml(nombre, resetUrl) {
+    const greeting = nombre ? `Hola <strong>${nombre}</strong>,` : 'Hola,';
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurar contraseña · Livi</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f5f7; font-family: Arial, sans-serif; color:#222222;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f5f7;">
+    <tr>
+      <td align="center" style="padding: 30px 10px;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px; background-color:#ffffff; border-radius:8px; overflow:hidden; text-align:left;">
+          <tr>
+            <td style="padding:30px 30px 20px 30px; text-align:center; border-bottom:1px solid #eeeeee;">
+              <a href="https://www.smartlivi.es" style="text-decoration:none;">
+                <img src="https://smartlivi.es/assets/logolivi1.png" width="120" alt="Livi" style="width:120px; max-width:100%; height:auto; border:none; display:block; margin:0 auto;">
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px; font-size:14px; line-height:22px; color:#222222;">
+              <h1 style="margin:0 0 16px 0; font-size:22px; line-height:28px; font-weight:bold; color:#1d1d1f;">
+                Restaurar tu contraseña de Livi
+              </h1>
+              <p style="margin:0 0 14px 0;">${greeting}</p>
+              <p style="margin:0 0 20px 0;">
+                Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en el Área de Clientes de <strong>Livi</strong>.
+                Haz clic en el siguiente botón para elegir una nueva contraseña (este enlace caduca en 1 hora):
+              </p>
+              <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin: 24px 0;">
+                <tr>
+                  <td align="center" style="border-radius:44px; background-color:#0605fe;">
+                    <a href="${resetUrl}" target="_blank" style="font-size:14px; font-family:Arial, sans-serif; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:44px; border:1px solid #0605fe; display:inline-block; font-weight:bold;">
+                      Restaurar contraseña
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 12px 0; font-size:12px; color:#6e6e73;">
+                Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+                <a href="${resetUrl}" style="color:#0605fe; word-break:break-all;">${resetUrl}</a>
+              </p>
+              <p style="margin:20px 0 0 0; font-size:12px; color:#86868b;">
+                Si no has solicitado este cambio, puedes ignorar este correo de forma segura.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 30px; background-color:#f9f9fb; color:#888888; font-size:11px; text-align:center; border-top:1px solid #eeeeee;">
+              &copy; 2026 Global Smart IoT. Todos los derechos reservados.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function setupClientesRoutes(app, pool, options = {}) {
     app.get('/', (req, res) => {
         res.sendFile(path.join(__dirname, 'index.html'));
     });
 
     app.get('/clientes', (req, res) => {
+        res.sendFile(path.join(__dirname, 'index.html'));
+    });
+
+    app.get('/restaurar', (req, res) => {
         res.sendFile(path.join(__dirname, 'index.html'));
     });
 
@@ -155,6 +243,148 @@ function setupClientesRoutes(app, pool) {
 
     app.post('/clientes/api/logout', requireAuth, handleLogout);
     app.post('/api/logout', requireAuth, handleLogout);
+
+    // ─── Password Recovery Endpoints ─────────────────────────────
+    async function handleForgotPassword(req, res) {
+        const email = normalizeEmail(req.body.email);
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email || !emailPattern.test(email)) {
+            return res.status(400).json({ success: false, error: 'Introduce un email válido' });
+        }
+
+        try {
+            const [rows] = await pool.query(
+                'SELECT iduser, nombre, email FROM registros WHERE email = ? LIMIT 1',
+                [email]
+            );
+
+            if (rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'No existe ninguna cuenta asociada a este email.'
+                });
+            }
+
+            const user = rows[0];
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            passwordResetTokens.set(resetToken, {
+                iduser: user.iduser,
+                email: user.email,
+                expiresAt: Date.now() + RESET_TOKEN_TTL_MS
+            });
+
+            const baseUrl = (process.env.APP_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+            const resetUrl = `${baseUrl}/?reset_token=${resetToken}`;
+
+            const transporter = options.transporter || createSmtpTransporter();
+            if (!transporter) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'El envío de correo (SMTP) no está configurado todavía en el servidor.'
+                });
+            }
+
+            const fromAddress = process.env.SMTP_FROM || `"Livi" <${process.env.SMTP_USER || 'info@smartlivi.es'}>`;
+            await transporter.sendMail({
+                from: fromAddress,
+                to: user.email,
+                subject: 'Restaurar tu contraseña · Área de Clientes Livi',
+                html: buildResetEmailHtml(user.nombre, resetUrl),
+                text: `Hola ${user.nombre || ''},\n\nPara restaurar tu contraseña en el Área de Clientes de Livi, abre este enlace (válido durante 1 hora):\n${resetUrl}\n\nSi no lo has solicitado, ignora este mensaje.`
+            });
+
+            return res.json({
+                success: true,
+                message: 'Te hemos enviado un email con las instrucciones para restaurar tu contraseña.'
+            });
+        } catch (error) {
+            console.error('Error in /clientes/api/forgot-password:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'No se pudo enviar el correo de restauración. Revisa la configuración SMTP.'
+            });
+        }
+    }
+
+    app.post('/clientes/api/forgot-password', handleForgotPassword);
+    app.post('/api/forgot-password', handleForgotPassword);
+
+    function getValidResetEntry(token) {
+        if (!token) return null;
+        const entry = passwordResetTokens.get(token);
+        if (!entry) return null;
+        if (Date.now() > entry.expiresAt) {
+            passwordResetTokens.delete(token);
+            return null;
+        }
+        return entry;
+    }
+
+    function handleVerifyResetToken(req, res) {
+        const token = String(req.query.token || '').trim();
+        const entry = getValidResetEntry(token);
+        if (!entry) {
+            return res.status(400).json({
+                success: false,
+                error: 'El enlace de restauración no es válido o ha caducado.'
+            });
+        }
+        return res.json({ success: true, email: entry.email });
+    }
+
+    app.get('/clientes/api/verify-reset-token', handleVerifyResetToken);
+    app.get('/api/verify-reset-token', handleVerifyResetToken);
+
+    async function handleResetPassword(req, res) {
+        const { token, password, confirmPassword } = req.body;
+        const entry = getValidResetEntry(String(token || '').trim());
+
+        if (!entry) {
+            return res.status(400).json({
+                success: false,
+                error: 'El enlace de restauración no es válido o ha caducado.'
+            });
+        }
+
+        if (!password || String(password).length < 6) {
+            return res.status(400).json({
+                success: false,
+                error: 'La contraseña debe tener al menos 6 caracteres.'
+            });
+        }
+
+        if (confirmPassword !== undefined && password !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                error: 'Las contraseñas no coinciden.'
+            });
+        }
+
+        try {
+            const passwordHash = await bcrypt.hash(password, 10);
+            await pool.query(
+                'UPDATE registros SET password_hash = ? WHERE iduser = ?',
+                [passwordHash, entry.iduser]
+            );
+            passwordResetTokens.delete(String(token).trim());
+
+            return res.json({
+                success: true,
+                token: issueToken(entry.iduser),
+                message: 'Tu contraseña se ha actualizado correctamente.'
+            });
+        } catch (error) {
+            console.error('Error in /clientes/api/reset-password:', error);
+            return res.status(500).json({
+                success: false,
+                error: 'Error al guardar la nueva contraseña.'
+            });
+        }
+    }
+
+    app.post('/clientes/api/reset-password', handleResetPassword);
+    app.post('/api/reset-password', handleResetPassword);
 
     async function handleClienteLookup(req, res) {
         const email = normalizeEmail(req.query.email);

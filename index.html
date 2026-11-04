@@ -219,6 +219,38 @@
       display: none
     }
 
+    .link-reset {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      text-decoration: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0
+    }
+
+    .link-reset:hover {
+      text-decoration: underline
+    }
+
+    .reset-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 6px
+    }
+
+    .reset-desc {
+      font-size: 13px;
+      color: var(--gray2);
+      margin-bottom: 18px;
+      line-height: 1.45
+    }
+
     /* ── App Layout ──────────────────────────────────────── */
     #app-view {
       display: none;
@@ -668,7 +700,7 @@
       <img src="/assets/logolivi1.png" alt="Livi" class="login-logo">
       <div class="login-sub">Área de clientes</div>
 
-      <div class="tabs">
+      <div class="tabs" id="auth-tabs">
         <button class="tab active" id="tab-login" onclick="switchTab('login')">Iniciar sesión</button>
         <button class="tab" id="tab-register" onclick="switchTab('register')">Crear acceso</button>
       </div>
@@ -679,10 +711,13 @@
         </div>
         <button class="btn-login" id="login-btn" type="submit">Entrar</button>
         <div class="form-err" id="login-err">Credenciales incorrectas.</div>
+        <div style="text-align:center">
+          <button type="button" class="link-reset" onclick="switchTab('forgot')">¿Has olvidado tu contraseña? Restaurar contraseña</button>
+        </div>
+        <p style="font-size:11px;color:var(--gray);margin-top:14px">Si ya dejaste tus datos en la web, usa el mismo email
+          para activar tu acceso.</p>
       </form>
-      <p style="font-size:11px;color:var(--gray);margin-top:14px">Si ya dejaste tus datos en la web, usa el mismo email
-        para activar tu acceso.</p><br><br>
-      <p></p>
+
       <form id="register-form" style="display:none" onsubmit="doRegister(event)">
         <div class="mg"><label class="lbl">Nombre completo</label><input class="inp" type="text" id="re-nombre"
             required></div>
@@ -692,6 +727,42 @@
             minlength="6" required></div>
         <button class="btn-login" id="register-btn" type="submit">Crear mi acceso</button>
         <div class="form-err" id="register-err"></div>
+        <div style="text-align:center">
+          <button type="button" class="link-reset" onclick="switchTab('forgot')">¿Ya tenías cuenta? Restaurar contraseña</button>
+        </div>
+        <p style="font-size:11px;color:var(--gray);margin-top:14px">Si ya dejaste tus datos en la web, usa el mismo email
+          para activar tu acceso.</p>
+      </form>
+
+      <form id="forgot-form" style="display:none" onsubmit="doForgotPassword(event)">
+        <div class="reset-title">Restaurar contraseña</div>
+        <div class="reset-desc">Introduce tu email y te enviaremos un enlace para que puedas crear una nueva contraseña.</div>
+        <div class="mg"><label class="lbl">Email</label><input class="inp" type="email" id="fp-email" placeholder="tu@email.com" required></div>
+        <button class="btn-login" id="forgot-btn" type="submit">Enviar enlace de restauración</button>
+        <div class="form-err" id="forgot-err"></div>
+        <div class="form-ok" id="forgot-ok"></div>
+        <div style="text-align:center;margin-top:6px">
+          <button type="button" class="link-reset" onclick="switchTab('login')">← Volver a iniciar sesión</button>
+        </div>
+      </form>
+
+      <form id="reset-form" style="display:none" onsubmit="doResetPassword(event)">
+        <div class="reset-title">Nueva contraseña</div>
+        <div class="reset-desc" id="reset-desc">Introduce y confirma tu nueva contraseña (mínimo 6 caracteres).</div>
+        <div class="mg">
+          <label class="lbl">Nueva contraseña</label>
+          <input class="inp" type="password" id="rp-pass" minlength="6" required>
+        </div>
+        <div class="mg">
+          <label class="lbl">Confirmar nueva contraseña</label>
+          <input class="inp" type="password" id="rp-pass2" minlength="6" required>
+        </div>
+        <button class="btn-login" id="reset-btn" type="submit">Guardar nueva contraseña</button>
+        <div class="form-err" id="reset-err"></div>
+        <div class="form-ok" id="reset-ok"></div>
+        <div style="text-align:center;margin-top:6px">
+          <button type="button" class="link-reset" onclick="cancelResetFlow()">← Volver a iniciar sesión</button>
+        </div>
       </form>
 
     </div>
@@ -772,12 +843,144 @@
       t._tid = setTimeout(() => t.classList.remove('show'), 3200);
     }
 
-    /* ── Login tabs ──────────────────────────────────────────── */
+    /* ── Login tabs & Recovery views ─────────────────────────── */
+    let activeResetToken = null;
+
     function switchTab(tab) {
+      const showTabs = tab === 'login' || tab === 'register';
+      document.getElementById('auth-tabs').style.display = showTabs ? 'flex' : 'none';
       document.getElementById('tab-login').classList.toggle('active', tab === 'login');
       document.getElementById('tab-register').classList.toggle('active', tab === 'register');
       document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
       document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+      document.getElementById('forgot-form').style.display = tab === 'forgot' ? 'block' : 'none';
+      document.getElementById('reset-form').style.display = tab === 'reset' ? 'block' : 'none';
+
+      if (tab === 'forgot') {
+        const currentEmail = document.getElementById('li-email').value || document.getElementById('re-email').value;
+        if (currentEmail && !document.getElementById('fp-email').value) {
+          document.getElementById('fp-email').value = currentEmail;
+        }
+        document.getElementById('forgot-err').style.display = 'none';
+        document.getElementById('forgot-ok').style.display = 'none';
+      }
+      if (tab === 'reset') {
+        document.getElementById('reset-err').style.display = 'none';
+        document.getElementById('reset-ok').style.display = 'none';
+      }
+    }
+
+    function cancelResetFlow() {
+      activeResetToken = null;
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.pathname === '/restaurar' ? '/' : window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+      switchTab('login');
+    }
+
+    async function doForgotPassword(e) {
+      e.preventDefault();
+      const btn = document.getElementById('forgot-btn');
+      const err = document.getElementById('forgot-err');
+      const ok = document.getElementById('forgot-ok');
+      err.style.display = 'none';
+      ok.style.display = 'none';
+      btn.textContent = 'Enviando…';
+      btn.disabled = true;
+      try {
+        const email = document.getElementById('fp-email').value.trim();
+        const r = await fetch('/clientes/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || 'No se pudo enviar el correo.');
+        ok.textContent = data.message || 'Te hemos enviado un email con el enlace para restaurar tu contraseña.';
+        ok.style.display = 'block';
+      } catch (e2) {
+        err.textContent = e2.message || 'Error al solicitar la restauración.';
+        err.style.display = 'block';
+      } finally {
+        btn.textContent = 'Enviar enlace de restauración';
+        btn.disabled = false;
+      }
+    }
+
+    async function initResetScreen(token) {
+      activeResetToken = token;
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('login-view').style.display = 'flex';
+      switchTab('reset');
+      const err = document.getElementById('reset-err');
+      const btn = document.getElementById('reset-btn');
+      const desc = document.getElementById('reset-desc');
+      try {
+        const r = await fetch('/clientes/api/verify-reset-token?token=' + encodeURIComponent(token));
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || 'El enlace de restauración no es válido o ha caducado.');
+        desc.textContent = `Introduce y confirma la nueva contraseña para ${data.email} (mínimo 6 caracteres).`;
+        btn.disabled = false;
+      } catch (e2) {
+        err.textContent = e2.message || 'El enlace de restauración no es válido o ha caducado.';
+        err.style.display = 'block';
+        btn.disabled = true;
+      }
+    }
+
+    async function doResetPassword(e) {
+      e.preventDefault();
+      const pass = document.getElementById('rp-pass').value;
+      const pass2 = document.getElementById('rp-pass2').value;
+      const err = document.getElementById('reset-err');
+      const ok = document.getElementById('reset-ok');
+      const btn = document.getElementById('reset-btn');
+      err.style.display = 'none';
+      ok.style.display = 'none';
+
+      if (pass.length < 6) {
+        err.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        err.style.display = 'block';
+        return;
+      }
+      if (pass !== pass2) {
+        err.textContent = 'Las contraseñas no coinciden.';
+        err.style.display = 'block';
+        return;
+      }
+
+      btn.textContent = 'Guardando…';
+      btn.disabled = true;
+      try {
+        const r = await fetch('/clientes/api/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activeResetToken,
+            password: pass,
+            confirmPassword: pass2
+          })
+        });
+        const data = await r.json();
+        if (!r.ok) throw Error(data.error || 'No se pudo actualizar la contraseña.');
+
+        if (window.history && window.history.replaceState) {
+          const cleanUrl = window.location.pathname === '/restaurar' ? '/' : window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+        activeResetToken = null;
+        S.token = data.token;
+        localStorage.setItem('livi_cli_tok', data.token);
+        showToast('Contraseña actualizada correctamente');
+        enterApp();
+      } catch (e2) {
+        err.textContent = e2.message || 'No se pudo guardar la nueva contraseña.';
+        err.style.display = 'block';
+      } finally {
+        btn.textContent = 'Guardar nueva contraseña';
+        btn.disabled = false;
+      }
     }
 
     /* ── Login / Register / Logout ────────────────────────────── */
@@ -1056,7 +1259,13 @@
     }
 
     /* ── Init ────────────────────────────────────────────────── */
-    if (S.token) { enterApp(); }
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetTokenParam = urlParams.get('reset_token') || urlParams.get('token');
+    if (resetTokenParam) {
+      initResetScreen(resetTokenParam);
+    } else if (S.token) {
+      enterApp();
+    }
   </script>
 </body>
 

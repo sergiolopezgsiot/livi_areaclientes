@@ -121,9 +121,17 @@ function requestJson(app, pathName, method = 'GET', headers = {}, body) {
 
 (async () => {
   process.env.CLIENTES_API_TOKEN = 'test-token';
+  const sentEmails = [];
+  const fakeTransporter = {
+    async sendMail(mailOpts) {
+      sentEmails.push(mailOpts);
+      return { messageId: 'mock-id' };
+    }
+  };
+
   const app = express();
   app.use(express.json());
-  setupClientesRoutes(app, createFakePool());
+  setupClientesRoutes(app, createFakePool(), { transporter: fakeTransporter });
   setupAdminDataRoutes(app, createFakePool());
 
   const missingToken = await requestJson(app, '/api/cliente?email=sergio@keycode.es');
@@ -182,7 +190,46 @@ function requestJson(app, pathName, method = 'GET', headers = {}, body) {
   assert.strictEqual(deleteRes.status, 200);
   assert.strictEqual(deleteRes.body.affectedRows, 1);
 
-  console.log('clientes-api and admindata CRUD tests passed');
+  // Test Password Recovery Flow
+  const forgotNotFound = await requestJson(app, '/clientes/api/forgot-password', 'POST', {}, {
+    email: 'noexiste@livi.es'
+  });
+  assert.strictEqual(forgotNotFound.status, 404);
+
+  const forgotOk = await requestJson(app, '/clientes/api/forgot-password', 'POST', {}, {
+    email: 'sergio@keycode.es'
+  });
+  assert.strictEqual(forgotOk.status, 200);
+  assert.strictEqual(sentEmails.length, 1, 'Debe haber enviado 1 correo de recuperación');
+  assert.strictEqual(sentEmails[0].to, 'sergio@keycode.es');
+
+  const matchToken = sentEmails[0].text.match(/reset_token=([a-f0-9]+)/);
+  assert.ok(matchToken, 'El correo debe incluir reset_token');
+  const resetToken = matchToken[1];
+
+  const verifyOk = await requestJson(app, `/clientes/api/verify-reset-token?token=${resetToken}`, 'GET');
+  assert.strictEqual(verifyOk.status, 200);
+  assert.strictEqual(verifyOk.body.email, 'sergio@keycode.es');
+
+  const resetMismatch = await requestJson(app, '/clientes/api/reset-password', 'POST', {}, {
+    token: resetToken,
+    password: 'newpassword1',
+    confirmPassword: 'newpassword2'
+  });
+  assert.strictEqual(resetMismatch.status, 400);
+
+  const resetOk = await requestJson(app, '/clientes/api/reset-password', 'POST', {}, {
+    token: resetToken,
+    password: 'newpassword123',
+    confirmPassword: 'newpassword123'
+  });
+  assert.strictEqual(resetOk.status, 200);
+  assert.ok(resetOk.body.token, 'Debe devolver token de sesión tras actualizar contraseña');
+
+  const verifyUsed = await requestJson(app, `/clientes/api/verify-reset-token?token=${resetToken}`, 'GET');
+  assert.strictEqual(verifyUsed.status, 400, 'El token usado debe quedar invalidado');
+
+  console.log('clientes-api, password reset, and admindata CRUD tests passed');
 })().catch((error) => {
   console.error(error);
   process.exit(1);
